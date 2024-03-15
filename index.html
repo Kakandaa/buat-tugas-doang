@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Snake Game</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+  }
+  canvas {
+    border: 1px solid black;
+    background-color: #eee;
+  }
+</style>
+</head>
+<body>
+<h1>Game Uler Nokia</h1>
+<p>di buat oleh Ananda Setya Nugraha</p>
+<p>NIM : 122490016</p>
+<canvas id="gameCanvas" width="400" height="400"></canvas>
+
+<script>
+  const canvas = document.getElementById('gameCanvas');
+  const ctx = canvas.getContext('2d');
+  const blockSize = 20;
+  const widthInBlocks = canvas.width / blockSize;
+  const heightInBlocks = canvas.height / blockSize;
+  let score = 0;
+  let snake;
+  let apple;
+
+  function init() {
+    snake = {
+      segments: [{x: 6, y: 5}, {x: 5, y: 5}, {x: 4, y: 5}],
+      direction: 'right'
+    };
+    createApple();
+    score = 0;
+  }
+
+  function createApple() {
+    apple = {
+      x: Math.floor(Math.random() * (widthInBlocks - 1)) + 1,
+      y: Math.floor(Math.random() * (heightInBlocks - 1)) + 1
+    };
+  }
+
+  function drawBlock(ctx, position) {
+    const x = position.x * blockSize;
+    const y = position.y * blockSize;
+    ctx.fillRect(x, y, blockSize, blockSize);
+  }
+
+  function drawSnake() {
+    ctx.fillStyle = 'green';
+    snake.segments.forEach(segment => drawBlock(ctx, segment));
+  }
+
+  function drawApple() {
+    ctx.fillStyle = 'red';
+    drawBlock(ctx, apple);
+  }
+
+  function drawGrid() {
+    ctx.strokeStyle = 'black';
+    ctx.lineWidth = 0.5;
+    for (let i = 0; i <= widthInBlocks; i++) {
+      ctx.beginPath();
+      ctx.moveTo(i * blockSize, 0);
+      ctx.lineTo(i * blockSize, canvas.height);
+      ctx.stroke();
+    }
+    for (let i = 0; i <= heightInBlocks; i++) {
+      ctx.beginPath();
+      ctx.moveTo(0, i * blockSize);
+      ctx.lineTo(canvas.width, i * blockSize);
+      ctx.stroke();
+    }
+  }
+
+  function checkCollision(head, array) {
+    return array.some(segment => head.x === segment.x && head.y === segment.y);
+  }
+
+  function update() {
+    const newHead = {x: snake.segments[0].x, y: snake.segments[0].y};
+
+    if (snake.direction === 'right') newHead.x++;
+    else if (snake.direction === 'left') newHead.x--;
+    else if (snake.direction === 'up') newHead.y--;
+    else if (snake.direction === 'down') newHead.y++;
+
+    if (checkCollision(newHead, snake.segments) || newHead.x >= widthInBlocks || newHead.x < 0 || newHead.y >= heightInBlocks || newHead.y < 0) {
+      init();
+      return;
+    }
+
+    snake.segments.unshift(newHead);
+
+    if (newHead.x === apple.x && newHead.y === apple.y) {
+      score++;
+      createApple();
+    } else {
+      snake.segments.pop();
+    }
+  }
+
+  function drawScore() {
+    ctx.font = '20px Arial';
+    ctx.fillStyle = 'black';
+    ctx.textAlign = 'left';
+    ctx.fillText('Score: ' + score, blockSize, blockSize * 2);
+  }
+
+  function gameLoop() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawGrid();
+    update();
+    drawSnake();
+    drawApple();
+    drawScore();
+    setTimeout(gameLoop, 100);
+  }
+
+  init();
+  gameLoop();
+
+  document.addEventListener('keydown', e => {
+    const keyPressed = e.key;
+    if (keyPressed === 'ArrowRight' && snake.direction !== 'left') snake.direction = 'right';
+    else if (keyPressed === 'ArrowLeft' && snake.direction !== 'right') snake.direction = 'left';
+    else if (keyPressed === 'ArrowUp' && snake.direction !== 'down') snake.direction = 'up';
+    else if (keyPressed === 'ArrowDown' && snake.direction !== 'up') snake.direction = 'down';
+  });
+</script>
+</body>
+</html>
